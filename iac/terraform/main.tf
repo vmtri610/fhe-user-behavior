@@ -34,6 +34,12 @@ resource "google_compute_instance" "vm_instance" {
   metadata = {
     ssh-keys = var.ssh_keys
   }
+
+  service_account {
+    # Sử dụng Compute Engine default service account và cấp full quyền API (Cloud Platform)
+    # để Jenkins bên trong tải mượt Image lên Artifact Registry
+    scopes = ["cloud-platform"]
+  }
 }
 
 
