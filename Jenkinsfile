@@ -43,29 +43,5 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Google Kubernetes Engine') {
-            agent {
-                kubernetes {
-                    containerTemplate {
-                        name 'helm' // Name of the container to be used for helm upgrade
-                        image 'vominhtri1610/jenkins:2.541.2' // The image containing helm
-                    }
-                }
-            }
-            steps {
-                script {
-                    container('helm') {
-                        // Ensure Helm and Kubernetes are configured properly to deploy
-                        sh("""
-                        helm upgrade --install fhe-user-behavior \
-                            --set image.repository=${registry} \
-                            --set image.tag=${BUILD_NUMBER} \
-                            ./helm/fhe-user-behavior \
-                            --namespace model-serving
-                        """)
-                    }
-                }
-            }
-        }
     }
 }
