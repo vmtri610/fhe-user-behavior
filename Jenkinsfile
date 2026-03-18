@@ -22,8 +22,8 @@ pipeline {
                     sh '''
                         docker build -t test-image -f Dockerfile .
                         docker run --rm test-image bash -c "
-                            cd /app/backend &&
-                            pytest --cov=. --cov-report=term --cov-report=xml -v
+                            cd /app &&
+                            PYTHONPATH=/app pytest backend/tests --cov=backend/app --cov-report=term --cov-report=xml -v
                         "
                         docker rmi test-image
                     '''
