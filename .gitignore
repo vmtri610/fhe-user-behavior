@@ -61,6 +61,7 @@ iac/ansible/.ansible_cache
 client_keys/
 # FHE Runtime artifacts
 backend/app/client/client_keys/
+backend/app/server_files/
 backend/app/server/server_files/
 
 
