@@ -1,0 +1,67 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+*.so
+
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+venv/
+.venv/
+env/
+.env/
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Models (Bỏ chặn để đẩy lên git cho Jenkins build)
+# backend/app/models/*.pkl
+# backend/app/models/*.h5
+# backend/app/models/*.joblib
+
+backend/dataset/*.csv
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+.vscode/
+*.log
+
+# Infrastructure - Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Infrastructure - Ansible
+iac/ansible/inventory
+iac/ansible/.ansible_cache
+
+# Secrets - Cực kỳ quan trọng để chặn rò rỉ thông tin
+**/secret_keys/*.json
+**/secrets/*.json
+*.json.key
+.env
+.env.*
+*secret*.yaml
+
+# FHE Runtime artifacts
+client_keys/
+backend/app/client/client_keys/
+backend/app/server_files/
+
+# Terraform variables
+*.tfvars
+*.tfvars.json

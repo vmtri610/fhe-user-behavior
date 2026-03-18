@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  fastapi-server:
+    platform: linux/amd64
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "30000:30000"
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - MAX_SESSIONS=20
+      - OTLP_GRPC_ENDPOINT=jaeger-jaeger.tracing.svc.cluster.local:4317
+
+  gradio-client:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - SERVER_URL=http://fastapi-server:30000
+    depends_on:
+      - fastapi-server

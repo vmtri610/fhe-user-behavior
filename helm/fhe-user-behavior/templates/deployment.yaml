@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+  namespace: model-serving
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}" 
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 30000
+          env:
+            - name: OTLP_GRPC_ENDPOINT
+              value: "jaeger-jaeger.tracing.svc.cluster.local:4317"
+        - name: {{ .Release.Name }}-client
+          image: "{{ .Values.clientImage.repository }}:{{ .Values.clientImage.tag }}"
+          imagePullPolicy: {{ .Values.clientImage.pullPolicy }}
+          ports:
+            - containerPort: 7860
+          env:
+            - name: SERVER_URL
+              value: "http://localhost:30000"
+          volumeMounts:
+            - name: model-volume
+              mountPath: /app/backend/app/models
+            - name: model-volume
+              mountPath: /app/backend/app/fhe-models
+              subPath: fhe-models
+      volumes:
+        - name: model-volume
+          persistentVolumeClaim:
+            claimName: propensity-model-pvc

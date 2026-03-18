@@ -1,0 +1,72 @@
+- name: Deploy Jenkins
+  hosts: servers
+  become: yes
+  vars:
+    default_container_name: jenkins
+    default_container_image: vominhtri1610/jenkins:2.541.2
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    # Cài đặt pip3 nếu chưa có
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: true
+
+    - name: Install google-auth using pip
+      pip:
+          name: google-auth
+          state: present
+          executable: pip3
+
+    - name: Install prerequisites
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce and docker-compose-plugin
+      apt:
+        pkg:
+          - docker-ce
+          - docker-compose-plugin
+        state: latest
+        update_cache: true
+
+    - name: Ensure Jenkins config directory exists on target
+      file:
+        path: /opt/jenkins
+        state: directory
+        mode: '0755'
+
+    - name: Copy custom_image files to GCP Server
+      copy:
+        src: ../../../custom_image/jelkins/
+        dest: /opt/jenkins/
+
+    - name: Build and Deploy Jenkins via Docker Compose
+      command: docker compose up -d --build
+      args:
+        chdir: /opt/jenkins

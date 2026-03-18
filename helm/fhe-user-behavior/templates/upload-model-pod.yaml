@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: upload-model-pod
+  namespace: model-serving
+spec:
+  restartPolicy: Never
+  containers:
+    - name: model-uploader
+      image: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server:latest
+      command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Changing permissions..."
+          chmod -R 777 /mnt/data
+          echo "Uploading model to PVC..."
+          cp -r /model-checkpoints/* /mnt/data/
+          echo "Uploading FHE models to PVC..."
+          mkdir -p /mnt/data/fhe-models
+          cp -r /fhe-model-checkpoints/* /mnt/data/fhe-models/
+      volumeMounts:
+        - name: model-volume
+          mountPath: /mnt/data
+  volumes:
+    - name: model-volume
+      persistentVolumeClaim:
+        claimName: propensity-model-pvc

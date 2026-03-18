@@ -1,0 +1,36 @@
+.git
+.gitignore
+.dockerignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.toast
+.lucas
+.built-in.a
+.config
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Notebooks
+.ipynb_checkpoints
+
+# Large data/models (optional: include if you want to keep container small and mount via PVC)
+# backend/dataset/
+# backend/app/models/
+
+# Infrastructure - These don't need to be in the Docker image
+helm/
+iac/
+
+# Logs
+*.log

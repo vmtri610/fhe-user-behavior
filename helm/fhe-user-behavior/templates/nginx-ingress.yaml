@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-nginx-ingress
+  namespace: model-serving
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.org/client-max-body-size: "50m"
+spec:
+  ingressClassName: "nginx"  # Thay thế cho annotation 'kubernetes.io/ingress.class'
+  rules:
+  - host: userbehavior.com  # Đã đổi theo yêu cầu không dùng dấu gạch ngang
+    http:
+      paths:
+      # --- Gradio UI (Ưu tiên trang chủ) ---
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 7860
+      
+      # --- FastAPI Backend (Các API ngầm) ---
+      - path: /docs
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
+      - path: /predict
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
+      - path: /send_file
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
+      - path: /run_fhe
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
+      - path: /get_output
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
+      - path: /openapi.json
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: 30000
