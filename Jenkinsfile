@@ -10,8 +10,6 @@ pipeline {
 
     environment{
         registry = 'asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server'
-        // Cần tạo thông tin đăng nhập loại "Username with password" hoặc "Secret text" chứa JSON KEY của GCP Service Account trên Jenkins
-        registryCredential = 'gcp-ar-credential' 
     }
 
     stages {
@@ -36,10 +34,13 @@ pipeline {
                     echo 'Building image for deployment..'
                     dockerImage = docker.build registry + ":$BUILD_NUMBER" 
                     echo 'Pushing image to dockerhub..'
-                    sh """
+                    sh """#!/bin/bash
+                        set +x
                         TOKEN=\$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
-                        echo \$TOKEN | docker login -u oauth2accesstoken --password-stdin https://asia-southeast1-docker.pkg.dev
+                        echo \$TOKEN | docker login -u oauth2accesstoken --password-stdin https://asia-southeast1-docker.pkg.dev >/dev/null 2>&1
+                        set -x
                         docker push ${registry}:${BUILD_NUMBER}
+                        docker tag ${registry}:${BUILD_NUMBER} ${registry}:latest
                         docker push ${registry}:latest
                     """
                 }
