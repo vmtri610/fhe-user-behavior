@@ -10,6 +10,7 @@ pipeline {
 
     environment{
         registry = 'asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server'
+        client_registry = 'asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/gradio-client'
     }
 
     stages {
@@ -28,20 +29,48 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
+        stage('Build & Push Images') {
             steps {
                 script {
-                    echo 'Building image for deployment..'
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER" 
-                    echo 'Pushing image to dockerhub..'
+                    echo "Building images for build number ${BUILD_NUMBER}..."
+                    
+                    // Login to Google Artifact Registry
                     sh """#!/bin/bash
                         set +x
                         TOKEN=\$(curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
                         echo \$TOKEN | docker login -u oauth2accesstoken --password-stdin https://asia-southeast1-docker.pkg.dev >/dev/null 2>&1
                         set -x
-                        docker push ${registry}:${BUILD_NUMBER}
+                        
+                        # Build & Push Server
+                        docker build -t ${registry}:${BUILD_NUMBER} -f Dockerfile .
                         docker tag ${registry}:${BUILD_NUMBER} ${registry}:latest
+                        docker push ${registry}:${BUILD_NUMBER}
                         docker push ${registry}:latest
+                        
+                        # Build & Push Client
+                        docker build -t ${client_registry}:${BUILD_NUMBER} -f Dockerfile.client .
+                        docker tag ${client_registry}:${BUILD_NUMBER} ${client_registry}:latest
+                        docker push ${client_registry}:${BUILD_NUMBER}
+                        docker push ${client_registry}:latest
+                    """
+                }
+            }
+        }
+        stage('Update Helm (GitOps)') {
+            steps {
+                script {
+                    echo "Updating Helm chart with new image tags: ${BUILD_NUMBER}"
+                    // This assumes Jenkins has permissions to push to the repo
+                    sh """
+                        # Update the tags in values.yaml
+                        sed -i "s/tag: .*/tag: \\"${BUILD_NUMBER}\\"/g" helm/fhe-user-behavior/values.yaml
+                        
+                        # Commit and push back to Git
+                        git config user.email "jenkins@robusto-ai.com"
+                        git config user.name "Jenkins CI"
+                        git add helm/fhe-user-behavior/values.yaml
+                        git commit -m "chore: update image tags to ${BUILD_NUMBER} [skip ci]"
+                        git push origin main
                     """
                 }
             }
