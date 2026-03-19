@@ -1,30 +1,34 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: upload-model-pod
+  name: upload-model-job
   namespace: model-serving
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
 spec:
-  restartPolicy: Never
-  containers:
-    - name: model-uploader
-      image: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server:latest
-      command:
-        - /bin/sh
-        - -c
-        - |
-          echo "Changing permissions..."
-          chmod -R 777 /mnt/data
-          echo "Uploading model to PVC..."
-          cp -r /model-checkpoints/* /mnt/data/
-          echo "Uploading FHE models to PVC..."
-          mkdir -p /mnt/data/fhe-models
-          cp -r /fhe-model-checkpoints/* /mnt/data/fhe-models/
-          echo "Keeping pod alive for ArgoCD..."
-          sleep infinity
-      volumeMounts:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: model-uploader
+          image: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Changing permissions..."
+              chmod -R 777 /mnt/data
+              echo "Uploading model to PVC..."
+              cp -r /model-checkpoints/* /mnt/data/
+              echo "Uploading FHE models to PVC..."
+              mkdir -p /mnt/data/fhe-models
+              cp -r /fhe-model-checkpoints/* /mnt/data/fhe-models/
+              echo "Models uploaded successfully! Job complete."
+          volumeMounts:
+            - name: model-volume
+              mountPath: /mnt/data
+      volumes:
         - name: model-volume
-          mountPath: /mnt/data
-  volumes:
-    - name: model-volume
-      persistentVolumeClaim:
-        claimName: propensity-model-pvc
+          persistentVolumeClaim:
+            claimName: propensity-model-pvc
