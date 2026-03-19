@@ -69,8 +69,10 @@ pipeline {
                         git config user.email "jenkins@robusto-ai.com"
                         git config user.name "Jenkins CI"
                         git add helm/fhe-user-behavior/values.yaml
-                        git commit -m "chore: update image tags to ${BUILD_NUMBER} [skip ci]"
-                        git push origin main
+                        git commit -m "chore: update image tags to ${BUILD_NUMBER} [skip ci]" || echo "No changes to commit"
+                        
+                        # Use HEAD:main to push from a detached head state
+                        git push origin HEAD:main
                     """
                 }
             }
