@@ -1,0 +1,26 @@
+# Default values for argocd.
+# This assumes argo-cd as a subchart dependency.
+
+argo-cd:
+  # By default, api server is exposed as ClusterIP
+  server:
+    extraArgs:
+      - --insecure
+    service:
+      type: LoadBalancer
+
+    # Enable ingress to access the UI externally
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hostname: argocd.userbehavior.com
+
+  # Set resource limits and requests if needed
+  # controller:
+  #   resources:
+  #     limits:
+  #       cpu: 500m
+  #       memory: 512Mi
+  #     requests:
+  #       cpu: 250m
+  #       memory: 256Mi
