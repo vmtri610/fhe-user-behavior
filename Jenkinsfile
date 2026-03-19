@@ -15,6 +15,11 @@ pipeline {
 
     stages {
         stage('Test') {
+            when {
+                expression {
+                    return sh(script: "git log -1 --pretty=%B | grep -q '\\[skip ci\\]'", returnStatus: true) != 0
+                }
+            }
             steps {
                 script {
                     echo 'Running tests with Docker build...'
@@ -30,6 +35,11 @@ pipeline {
             }
         }
         stage('Build & Push Images') {
+            when {
+                expression {
+                    return sh(script: "git log -1 --pretty=%B | grep -q '\\[skip ci\\]'", returnStatus: true) != 0
+                }
+            }
             steps {
                 script {
                     echo "Building images for build number ${BUILD_NUMBER}..."
@@ -57,6 +67,11 @@ pipeline {
             }
         }
         stage('Update Helm (GitOps)') {
+            when {
+                expression {
+                    return sh(script: "git log -1 --pretty=%B | grep -q '\\[skip ci\\]'", returnStatus: true) != 0
+                }
+            }
             steps {
                 script {
                     echo "Updating Helm chart with new image tags: ${BUILD_NUMBER}"

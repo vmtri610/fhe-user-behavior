@@ -19,6 +19,8 @@ spec:
           echo "Uploading FHE models to PVC..."
           mkdir -p /mnt/data/fhe-models
           cp -r /fhe-model-checkpoints/* /mnt/data/fhe-models/
+          echo "Keeping pod alive for ArgoCD..."
+          sleep infinity
       volumeMounts:
         - name: model-volume
           mountPath: /mnt/data
