@@ -60,20 +60,23 @@ pipeline {
             steps {
                 script {
                     echo "Updating Helm chart with new image tags: ${BUILD_NUMBER}"
-                    // This assumes Jenkins has permissions to push to the repo
-                    sh """
-                        # Update the tags in values.yaml
-                        sed -i "s/tag: .*/tag: \\"${BUILD_NUMBER}\\"/g" helm/fhe-user-behavior/values.yaml
-                        
-                        # Commit and push back to Git
-                        git config user.email "jenkins@robusto-ai.com"
-                        git config user.name "Jenkins CI"
-                        git add helm/fhe-user-behavior/values.yaml
-                        git commit -m "chore: update image tags to ${BUILD_NUMBER} [skip ci]" || echo "No changes to commit"
-                        
-                        # Use HEAD:main to push from a detached head state
-                        git push origin HEAD:main
-                    """
+                    // Sử dụng ID 'github' bạn vừa cung cấp
+                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                        sh """
+                            # Update the tags in values.yaml
+                            sed -i "s/tag: .*/tag: \\"${BUILD_NUMBER}\\"/g" helm/fhe-user-behavior/values.yaml
+                            
+                            # Config git
+                            git config user.email "jenkins@robusto-ai.com"
+                            git config user.name "Jenkins CI"
+                            git add helm/fhe-user-behavior/values.yaml
+                            git commit -m "chore: update image tags to ${BUILD_NUMBER} [skip ci]" || echo "No changes to commit"
+                            
+                            # Push bằng Token/Credentials từ Jenkins
+                            git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/vmtri610/fhe-user-behavior.git
+                            git push origin HEAD:main
+                        """
+                    }
                 }
             }
         }
