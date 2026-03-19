@@ -1,9 +1,9 @@
 image:
   repository: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server
-  tag: "19"
+  tag: "20"
   pullPolicy: Always
 
 clientImage:
   repository: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/gradio-client
-  tag: "19"
+  tag: "20"
   pullPolicy: Always
