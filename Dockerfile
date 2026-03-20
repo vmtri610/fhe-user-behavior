@@ -17,11 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Theo cấu trúc của bạn: /backend/app/main.py, ...
 COPY . .
 
-# 6. Tạo thư mục chứa model dự phòng để Pod upload có thể lấy
-# Lệnh cp trong upload-model-pod.yaml đang tìm ở /model-checkpoints/
-RUN mkdir -p /model-checkpoints /fhe-model-checkpoints
-COPY backend/app/models/* /model-checkpoints/
-COPY backend/app/fhe-models/* /fhe-model-checkpoints/
+# 6. (Bỏ qua - Models sẽ được Job lấy trực tiếp từ GCS)
 
 # 7. Expose cổng 30000 (khớp với service.yaml của bạn)
 EXPOSE 30000

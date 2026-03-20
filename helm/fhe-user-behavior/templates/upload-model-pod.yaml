@@ -10,20 +10,21 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      serviceAccountName: fhe-model-sa
       containers:
         - name: model-uploader
-          image: asia-southeast1-docker.pkg.dev/robusto-ai-dev-490114/fhe-repo/fastapi-server:latest
+          image: google/cloud-sdk:slim
           command:
             - /bin/sh
             - -c
             - |
               echo "Changing permissions..."
               chmod -R 777 /mnt/data
-              echo "Uploading model to PVC..."
-              cp -r /model-checkpoints/* /mnt/data/
-              echo "Uploading FHE models to PVC..."
+              echo "Uploading model to PVC from GCS..."
+              gsutil -m cp -r gs://fhe-model-registry/model-checkpoints/* /mnt/data/
+              echo "Uploading FHE models to PVC from GCS..."
               mkdir -p /mnt/data/fhe-models
-              cp -r /fhe-model-checkpoints/* /mnt/data/fhe-models/
+              gsutil -m cp -r gs://fhe-model-registry/fhe-model-checkpoints/* /mnt/data/fhe-models/
               echo "Models uploaded successfully! Job complete."
           volumeMounts:
             - name: model-volume

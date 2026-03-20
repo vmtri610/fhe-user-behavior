@@ -25,10 +25,9 @@ env/
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 
-# Models (Bỏ chặn để đẩy lên git cho Jenkins build)
-# backend/app/models/*.pkl
-# backend/app/models/*.h5
-# backend/app/models/*.joblib
+# Models
+backend/app/models/
+backend/app/fhe-models/
 
 backend/dataset/*.csv
 

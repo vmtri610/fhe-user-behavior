@@ -25,8 +25,9 @@ pip-delete-this-directory.txt
 .ipynb_checkpoints
 
 # Large data/models (optional: include if you want to keep container small and mount via PVC)
-# backend/dataset/
-# backend/app/models/
+backend/dataset/
+backend/app/models/
+backend/app/fhe-models/
 
 # Infrastructure - These don't need to be in the Docker image
 helm/
