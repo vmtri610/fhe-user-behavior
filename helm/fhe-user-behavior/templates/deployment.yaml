@@ -24,6 +24,12 @@ spec:
           env:
             - name: OTLP_GRPC_ENDPOINT
               value: "jaeger-jaeger.tracing.svc.cluster.local:4317"
+          volumeMounts:
+            - name: model-volume
+              mountPath: /app/backend/app/models
+            - name: model-volume
+              mountPath: /app/backend/app/fhe-models
+              subPath: fhe-models
         - name: {{ .Release.Name }}-client
           image: "{{ .Values.clientImage.repository }}:{{ .Values.clientImage.tag }}"
           imagePullPolicy: {{ .Values.clientImage.pullPolicy }}

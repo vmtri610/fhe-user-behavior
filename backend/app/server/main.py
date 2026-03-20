@@ -38,10 +38,14 @@ SERVER_FILES = Path(__file__).parent / "server_files"
 MAX_SESSIONS = int(os.getenv("MAX_SESSIONS", "20"))
 SERVER_FILES.mkdir(exist_ok=True)
 
-logger.info(f"Loading FHE server from {FHE_MODEL_DIR} ...")
-fhe_server = FHEModelServer(path_dir=FHE_MODEL_DIR)
-fhe_server.load()
-logger.info("FHE server loaded.")
+try:
+    logger.info(f"Loading FHE server from {FHE_MODEL_DIR} ...")
+    fhe_server = FHEModelServer(path_dir=FHE_MODEL_DIR)
+    fhe_server.load()
+    logger.info("FHE server loaded.")
+except Exception as e:
+    logger.warning(f"FHE models not found in {FHE_MODEL_DIR}. Mapped PVC may be missing or running test suite. Error: {e}")
+    fhe_server = None
 
 # ── Telemetry (Jaeger) Configuration ───────────────────────────────────────────
 OTLP_GRPC_ENDPOINT = os.getenv("OTLP_GRPC_ENDPOINT", "jaeger-jaeger.tracing.svc.cluster.local:4317")
@@ -162,6 +166,9 @@ async def run_fhe(client_id: str = Form()):
     with tracer.start_as_current_span("read_fhe_inputs"):
         eval_key  = eval_key_path.read_bytes()
         enc_input = enc_input_path.read_bytes()
+
+    if fhe_server is None:
+        return JSONResponse(status_code=500, content={"status": "error", "message": "FHE server not loaded (missing models folder)"})
 
     logger.info(f"[{client_id}] Running FHE inference ...")
     t0 = time.time()
