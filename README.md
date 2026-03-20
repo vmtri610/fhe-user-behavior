@@ -1,5 +1,4 @@
 # FHE-User-Behavior: Privacy-Preserving User Purchase Prediction with Fully Homomorphic Encryption
-
 [![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)](https://www.python.org/)
 [![Concrete ML](https://img.shields.io/badge/Concrete--ML-1.4.0-orange)](https://docs.zama.ai/concrete-ml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -37,6 +36,7 @@ The system is built on [Concrete ML](https://docs.zama.ai/concrete-ml) by Zama a
 ## Tech Stack
 
 ### Machine Learning
+
 | Component | Technology |
 |---|---|
 | FHE framework | [Concrete ML 1.4.0](https://docs.zama.ai/concrete-ml) |
@@ -44,6 +44,7 @@ The system is built on [Concrete ML](https://docs.zama.ai/concrete-ml) by Zama a
 | Quantization | 7-bit |
 
 ### Application
+
 | Component | Technology |
 |---|---|
 | Backend API | FastAPI |
@@ -51,12 +52,14 @@ The system is built on [Concrete ML](https://docs.zama.ai/concrete-ml) by Zama a
 | Tracing | OpenTelemetry → Jaeger |
 
 ### MLOps / Infrastructure
+
 | Component | Technology |
 |---|---|
-| Cloud | Google Cloud Platform (GKE, GCE, GAR) |
+| Cloud | Google Cloud Platform (GKE, GCE, GAR, GCS) |
 | IaC | Terraform (cluster), Ansible (Jenkins VM), Helm (components) |
 | CI | Jenkins (Pytest → Docker build → push to GAR) |
 | CD | ArgoCD (GitOps, webhook-triggered) |
+| Model storage | Google Cloud Storage (GCS) |
 | Monitoring | Prometheus + Grafana + Loki + Alertmanager |
 | Ingress | NGINX Ingress Controller |
 | Persistent storage | Kubernetes PVC |
@@ -80,13 +83,14 @@ The flow:
 
 ### 2. Model Training & Packaging
 
-How the FHE model is trained, compiled, and packaged for deployment.
+How the FHE model is trained, compiled, and stored for deployment.
 
 ![Model Fine-tuning](images/model-finetuning.png)
 
 - Dataset + Model type + Hyperparameters → **Concrete ML** compiles FHE circuit
 - Output: `server.zip` (compiled FHE model) + `client.zip` (cryptosystem parameters)
-- Both files are baked into the Docker image and copied to a **PVC** via a Kubernetes Job (`upload-model-job`) at deploy time
+- Both files are uploaded to **GCS** and pulled to a **PVC** via a Kubernetes Job at deploy time
+- Model lifecycle is fully decoupled from the Docker image — retraining does not require rebuilding or redeploying the application
 
 ---
 
@@ -117,6 +121,7 @@ concrete-ml >= 1.4.0
 docker
 kubectl
 helm
+gcloud CLI (for GCS access)
 ```
 
 ### Train and compile the FHE model
@@ -128,6 +133,7 @@ python development.py
 #          deployment/preprocessor.pkl
 ```
 
+
 ### Run locally
 
 ```bash
@@ -136,8 +142,11 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
 # Start Gradio demo (separate terminal)
 python app.py
+
 # Open http://localhost:7860
 ```
+
+---
 
 ## Research Paper
 

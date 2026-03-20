@@ -15,8 +15,22 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_predict_plaintext_success():
-    """Kiểm tra API predict plaintext hoạt động (nếu đã có model)"""
+from unittest.mock import patch
+
+class MockModel:
+    def predict(self, df):
+        import numpy as np
+        return np.array([1])
+
+class MockScaler:
+    def transform(self, df):
+        return df
+
+@patch("backend.app.server.main.load_model_assets")
+def test_predict_plaintext_success(mock_load_assets):
+    """Kiểm tra API predict plaintext hoạt động, sử dụng Mocking vì model không lưu trên Git/Docker nữa."""
+    mock_load_assets.return_value = (MockModel(), MockScaler())
+
     sample_payload = {
         "Age": 60,
         "Gender": 1,
@@ -32,10 +46,7 @@ def test_predict_plaintext_success():
     data = response.json()
     
     assert "status" in data
-    if data["status"] == "success":
-        assert "prediction" in data
-        assert isinstance(data["prediction"], int)
-    else:
-        # Nếu model scale bị lỗi version numpy/sklearn hoặc không tải được
-        assert data["status"] == "error"
-        assert "message" in data
+    assert data["status"] == "success"
+    assert "prediction" in data
+    assert isinstance(data["prediction"], int)
+    assert data["prediction"] == 1
